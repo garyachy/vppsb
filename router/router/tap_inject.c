@@ -20,6 +20,7 @@
 #include <vnet/ip/ip.h>
 #include <vnet/ip/lookup.h>
 #include <vnet/fib/fib.h>
+#include <vnet/osi/osi.h>
 
 static tap_inject_main_t tap_inject_main;
 extern dpo_type_t tap_inject_dpo_type;
@@ -140,6 +141,8 @@ tap_inject_enable (void)
   ip6_register_protocol (IP_PROTOCOL_OSPF, im->tx_node_index);
   ip6_register_protocol (IP_PROTOCOL_TCP, im->tx_node_index);
   ip6_register_protocol (IP_PROTOCOL_UDP, im->tx_node_index);
+  /* Registering ISIS to OSI node. */
+  osi_register_input_protocol (OSI_PROTOCOL_isis, im->tx_node_index);
 
   {
     dpo_id_t dpo = DPO_INVALID;
