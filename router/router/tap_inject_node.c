@@ -18,6 +18,7 @@
 
 #include <netinet/in.h>
 #include <vnet/ethernet/arp_packet.h>
+#include <sys/uio.h>		/* writev */
 
 vlib_node_registration_t tap_inject_rx_node;
 vlib_node_registration_t tap_inject_tx_node;
@@ -178,7 +179,7 @@ VLIB_REGISTER_NODE (tap_inject_neighbor_node) = {
 
 
 #define MTU 1500
-#define MTU_BUFFERS ((MTU + VLIB_BUFFER_DATA_SIZE - 1) / VLIB_BUFFER_DATA_SIZE)
+#define MTU_BUFFERS ((MTU + VLIB_BUFFER_DEFAULT_DATA_SIZE - 1) / VLIB_BUFFER_DEFAULT_DATA_SIZE)
 #define NUM_BUFFERS_TO_ALLOC 32
 
 static inline uword
@@ -202,9 +203,15 @@ tap_rx (vlib_main_t * vm, vlib_node_runtime_t * node, vlib_frame_t * f, int fd)
     {
       u32 len = vec_len (im->rx_buffers);
 
-      len = vlib_buffer_alloc_from_free_list (vm,
-                    &im->rx_buffers[len], NUM_BUFFERS_TO_ALLOC,
-                    VLIB_BUFFER_DEFAULT_FREE_LIST_INDEX);
+#if TBD
+     len = vlib_buffer_alloc_from_free_list (vm,
+           &im->rx_buffers[len], NUM_BUFFERS_TO_ALLOC,
+           VLIB_BUFFER_DEFAULT_FREE_LIST_INDEX);
+#else
+     len = vlib_buffer_alloc_on_numa (vm,
+           &im->rx_buffers[len], NUM_BUFFERS_TO_ALLOC,
+           vm->numa_node);
+#endif
 
       _vec_len (im->rx_buffers) += len;
 
@@ -225,7 +232,7 @@ tap_rx (vlib_main_t * vm, vlib_node_runtime_t * node, vlib_frame_t * f, int fd)
       b = vlib_get_buffer (vm, bi[i]);
 
       iov[i].iov_base = b->data;
-      iov[i].iov_len = VLIB_BUFFER_DATA_SIZE;
+      iov[i].iov_len = VLIB_BUFFER_DEFAULT_DATA_SIZE;
     }
 
   n_bytes = readv (fd, iov, MTU_BUFFERS);
@@ -240,7 +247,7 @@ tap_rx (vlib_main_t * vm, vlib_node_runtime_t * node, vlib_frame_t * f, int fd)
   vnet_buffer (b)->sw_if_index[VLIB_RX] = sw_if_index;
   vnet_buffer (b)->sw_if_index[VLIB_TX] = sw_if_index;
 
-  n_bytes_left = n_bytes - VLIB_BUFFER_DATA_SIZE;
+  n_bytes_left = n_bytes - VLIB_BUFFER_DEFAULT_DATA_SIZE;
 
   if (n_bytes_left > 0)
     {
@@ -251,10 +258,10 @@ tap_rx (vlib_main_t * vm, vlib_node_runtime_t * node, vlib_frame_t * f, int fd)
   b->current_length = n_bytes;
 
   /* If necessary, configure any remaining buffers in the chain. */
-  for (i = 1; n_bytes_left > 0; ++i, n_bytes_left -= VLIB_BUFFER_DATA_SIZE)
+  for (i = 1; n_bytes_left > 0; ++i, n_bytes_left -= VLIB_BUFFER_DEFAULT_DATA_SIZE)
     {
       b = vlib_get_buffer (vm, bi[i - 1]);
-      b->current_length = VLIB_BUFFER_DATA_SIZE;
+      b->current_length = VLIB_BUFFER_DEFAULT_DATA_SIZE;
       b->flags |= VLIB_BUFFER_NEXT_PRESENT;
       b->next_buffer = bi[i];
 

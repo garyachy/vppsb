@@ -16,10 +16,10 @@
 
 #include <librtnl/netns.h>
 #include <vlibmemory/api.h>
-#include <vnet/ip/ip6_neighbor.h>
+#include <vnet/ip-neighbor/ip6_neighbor.h>
 #include <vnet/ip/lookup.h>
 #include <vnet/fib/fib.h>
-#include <vnet/ethernet/arp.h>
+#include <vnet/arp/arp.h>
 #include <arpa/inet.h>
 #include <linux/mpls.h>
 #include <vnet/mpls/packet.h>
@@ -95,6 +95,7 @@ add_del_link (ns_link_t * l, int is_del)
 static void
 add_del_neigh (ns_neigh_t * n, int is_del)
 {
+#if TBD
   vnet_main_t * vnet_main = vnet_get_main ();
   vlib_main_t * vm = vlib_get_main ();
   u32 sw_if_index;
@@ -111,9 +112,8 @@ add_del_neigh (ns_neigh_t * n, int is_del)
 
       memset (&a, 0, sizeof (a));
 
-      clib_memcpy (&a.ethernet, n->lladdr, ETHER_ADDR_LEN);
+      clib_memcpy (&a.mac, n->lladdr, ETHER_ADDR_LEN);
       clib_memcpy (&a.ip4, n->dst, sizeof (a.ip4));
-
 
       if (n->nd.ndm_state & NUD_REACHABLE)
         {
@@ -126,6 +126,7 @@ add_del_neigh (ns_neigh_t * n, int is_del)
         {
           vnet_arp_unset_ip4_over_ethernet (vnet_main, sw_if_index, &a);
         }
+
     }
   else if (n->nd.ndm_family == AF_INET6)
     {
@@ -140,6 +141,7 @@ add_del_neigh (ns_neigh_t * n, int is_del)
         vnet_unset_ip6_ethernet_neighbor (vm, sw_if_index,
                                           (ip6_address_t *) n->dst);
     }
+#endif
 }
 
 
