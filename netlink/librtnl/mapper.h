@@ -16,7 +16,7 @@
 #ifndef MAPPER_H_
 #define MAPPER_H_
 
-#include <librtnl/netns.h>
+#include "netns.h"
 
 /*
  * Automatically map linux network routes to VPP.

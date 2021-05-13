@@ -258,7 +258,7 @@ tap_inject_enable_disable_all_interfaces (int enable)
   /* Collect all the interface indices. */
   interfaces = vnet_main->interface_main.hw_interfaces;
   indices = enable ? &im->interfaces_to_enable : &im->interfaces_to_disable;
-  pool_foreach (hw, interfaces, vec_add1 (*indices, hw - interfaces));
+  pool_foreach_old (hw, interfaces, vec_add1 (*indices, hw - interfaces));
 
   if (tap_inject_iface_isr (vlib_get_main (), 0, 0))
     return clib_error_return (0, "tap-inject interface add del isr failed");
