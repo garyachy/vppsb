@@ -119,6 +119,7 @@ tap_inject_tap_connect (vnet_hw_interface_t * hw)
   /* Get notified when the tap needs to be read. */
   template.read_function = tap_inject_tap_read;
   template.file_descriptor = tap_fd;
+  template.description = name;
 
   clib_file_add (&file_main, &template);
 
