@@ -16,8 +16,8 @@
 #define _GNU_SOURCE
 #include <sched.h>
 
-#include <librtnl/rtnl.h>
-#include <librtnl/netns.h>
+#include "rtnl.h"
+#include "netns.h"
 
 #include <vlib/vlib.h>
 #include <vlib/unix/unix.h>
@@ -266,7 +266,7 @@ static int rtnl_socket_open(rtnl_ns_t *ns)
     .nl_groups = grpmask(RTNLGRP_LINK)| grpmask(RTNLGRP_IPV6_IFADDR) |
     grpmask(RTNLGRP_IPV4_IFADDR) | grpmask(RTNLGRP_IPV4_ROUTE) |
     grpmask(RTNLGRP_IPV6_ROUTE) | grpmask(RTNLGRP_NEIGH) |
-    grpmask(RTNLGRP_NOTIFY) | grpmask(RTNLGRP_MPLS_ROUTE),
+    grpmask(RTNLGRP_NOTIFY),
   };
 
   if (bind(ns->rtnl_socket, (struct sockaddr*) &addr, sizeof(addr))) {
@@ -516,7 +516,7 @@ rtnl_process (vlib_main_t * vm,
     rm->now = vlib_time_now(vm);
 
     if (event_type == ~0) { //Clock event or no event
-      pool_foreach(ns, rm->streams, {
+      pool_foreach_old(ns, rm->streams, {
           if (ns->timeout < rm->now) {
             ns->timeout = DBL_MAX;
             rtnl_process_timeout(ns);
@@ -545,7 +545,7 @@ rtnl_process (vlib_main_t * vm,
     vec_reset_length (event_data);
 
     timeout = DBL_MAX;
-    pool_foreach(ns, rm->streams, {
+    pool_foreach_old(ns, rm->streams, {
         if (ns->timeout < timeout)
           timeout = ns->timeout;
       });

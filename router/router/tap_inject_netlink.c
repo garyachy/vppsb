@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <librtnl/netns.h>
+#include <router/librtnl/netns.h>
 #include <vlibmemory/api.h>
 #include <vnet/ip-neighbor/ip6_neighbor.h>
 #include <vnet/ip/lookup.h>
@@ -227,6 +227,7 @@ add_del_route (ns_route_t * r, int is_del)
                                 0 /* weight */, NULL,
                                 FIB_ROUTE_PATH_FLAG_NONE);
     }
+#if 0
   else if (r->rtm.rtm_family == AF_MPLS)
     {
       u32 dst_label;
@@ -252,6 +253,7 @@ add_del_route (ns_route_t * r, int is_del)
                                 FIB_ENTRY_FLAG_NONE,
                                 rpaths);
     }
+#endif
 }
 
 

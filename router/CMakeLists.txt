@@ -13,11 +13,18 @@
 
 add_vpp_plugin(router
   SOURCES
-  ../netlink/librtnl/mapper.c
-  ../netlink/librtnl/netns.c
-  ../netlink/librtnl/rtnl.c
+  librtnl/mapper.c
+  librtnl/netns.c
+  librtnl/rtnl.c
   router/tap_inject.c
   router/tap_inject_netlink.c
   router/tap_inject_node.c
   router/tap_inject_tap.c
+
+  INSTALL_HEADERS 
+  librtnl/mapper.h
+  librtnl/netns.h
+  librtnl/rtnl.h
+  router/tap_inject.h
+  
 )

@@ -1,0 +1,5 @@
+
+
+
+ln -sf ../netlink/librtnl router/librtnl
+ln -sf ../../../vppsb/router vpp/src/plugins/router
