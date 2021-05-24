@@ -18,7 +18,7 @@ if DEBUG
 AM_CFLAGS += -O0 -DCLIB_DEBUG
 vpp_build = vpp_debug-native
 else
-AM_CFLAGS += -O2
+AM_CFLAGS += -O2 -DCLIB_VEC64=0
 vpp_build = vpp-native
 endif
 

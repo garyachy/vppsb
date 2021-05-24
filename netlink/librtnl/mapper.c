@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#include <librtnl/mapper.h>
-#include <librtnl/netns.h>
+#include "mapper.h"
+#include "netns.h"
 
 #include <vnet/ip/ip.h>
 #include <vnet/ip/lookup.h>
@@ -42,7 +42,7 @@ static mapper_main_t mapper_main;
 mapper_map_t *mapper_get_by_ifindex(mapper_ns_t *ns, int ifindex)
 {
   mapper_map_t *map;
-  pool_foreach(map, ns->mappings, {
+  pool_foreach_old(map, ns->mappings, {
       if (ifindex == map->linux_ifindex)
         return map;
   });
@@ -127,7 +127,7 @@ mapper_delmap(mapper_ns_t*ns, mapper_map_t *map)
 {
   ns_route_t *route;
   netns_t *netns = netns_getns(ns->netns_handle);
-  pool_foreach(route, netns->routes, {
+  pool_foreach_old(route, netns->routes, {
       if (route->oif == map->linux_ifindex)
         mapper_add_del_route(ns, route, 1);
   });
@@ -139,7 +139,7 @@ mapper_getmap(mapper_ns_t*ns, u32 sw_if_index,
               int linux_ifindex, int create)
 {
   mapper_map_t *map;
-  pool_foreach(map, ns->mappings, {
+  pool_foreach_old(map, ns->mappings, {
       if (linux_ifindex == map->linux_ifindex) {
         if (sw_if_index != map->sw_if_index)
           return NULL; //Cannot have multiple mapping with the same ifindex
@@ -160,7 +160,7 @@ mapper_getmap(mapper_ns_t*ns, u32 sw_if_index,
   //Load available routes
   ns_route_t *route;
   netns_t *netns = netns_getns(ns->netns_handle);
-  pool_foreach(route, netns->routes, {
+  pool_foreach_old(route, netns->routes, {
       if (route->oif == map->linux_ifindex)
         mapper_add_del_route(ns, route, 0);
   });
@@ -172,7 +172,7 @@ mapper_get_ns(char *nsname)
 {
   mapper_main_t *mm = &mapper_main;
   mapper_ns_t *ns;
-  pool_foreach(ns, mm->namespaces, {
+  pool_foreach_old(ns, mm->namespaces, {
       if (!strcmp(nsname, ns->nsname))
         return ns - mm->namespaces;
   });
@@ -246,7 +246,7 @@ mapper_del_ns(u32 nsindex)
 
   //Remove all existing mappings
   int i, *indexes = 0;
-  pool_foreach_index(i, ns->mappings, {
+  pool_foreach_index_old(i, ns->mappings, {
     vec_add1(indexes, i);
   });
   vec_foreach_index(i, indexes) {
