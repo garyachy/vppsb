@@ -44,6 +44,7 @@ typedef struct {
   u32 * sw_if_index_to_tap_if_index;
   u32 * tap_fd_to_sw_if_index;
   u32 * tap_if_index_to_sw_if_index;
+  u32 * sw_if_index_to_clib_file_index;
 
   u32 * interfaces_to_enable;
   u32 * interfaces_to_disable;
@@ -61,8 +62,10 @@ typedef struct {
 
 tap_inject_main_t * tap_inject_get_main (void);
 
-void tap_inject_insert_tap (u32 sw_if_index, u32 tap_fd, u32 tap_if_index);
+void tap_inject_insert_tap (u32 sw_if_index, u32 tap_fd, u32 tap_if_index,u32 clib_file_index);
 void tap_inject_delete_tap (u32 sw_if_index);
+
+u32 tap_inject_lookup_clib_file_index (u32 sw_if_index);
 
 u32 tap_inject_lookup_tap_fd (u32 sw_if_index);
 u32 tap_inject_lookup_sw_if_index_from_tap_fd (u32 tap_fd);

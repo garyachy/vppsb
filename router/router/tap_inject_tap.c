@@ -53,6 +53,7 @@ tap_inject_tap_connect (vnet_hw_interface_t * hw)
   int fd;
   struct ifreq ifr;
   clib_file_t template;
+  u32 clib_file_index;
   u32 tap_fd;
   u8 * name;
 
@@ -121,9 +122,9 @@ tap_inject_tap_connect (vnet_hw_interface_t * hw)
   template.file_descriptor = tap_fd;
   template.description = name;
 
-  clib_file_add (&file_main, &template);
+  clib_file_index = clib_file_add (&file_main, &template);
 
-  tap_inject_insert_tap (sw->sw_if_index, tap_fd, ifr.ifr_ifindex);
+  tap_inject_insert_tap (sw->sw_if_index, tap_fd, ifr.ifr_ifindex,clib_file_index);
 
   return 0;
 }
@@ -131,11 +132,17 @@ tap_inject_tap_connect (vnet_hw_interface_t * hw)
 clib_error_t *
 tap_inject_tap_disconnect (u32 sw_if_index)
 {
-  u32 tap_fd;
+  u32 tap_fd,clib_file_index;
 
   tap_fd = tap_inject_lookup_tap_fd (sw_if_index);
   if (tap_fd == ~0)
     return clib_error_return (0, "failed to disconnect tap");
+
+  clib_file_index = tap_inject_lookup_clib_file_index(sw_if_index);
+  if (clib_file_index != ~0)
+  {
+      clib_file_del_by_index(&file_main, clib_file_index);
+  }
 
   tap_inject_delete_tap (sw_if_index);
 
