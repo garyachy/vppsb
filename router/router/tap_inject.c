@@ -32,7 +32,7 @@ tap_inject_get_main (void)
 }
 
 void
-tap_inject_insert_tap (u32 sw_if_index, u32 tap_fd, u32 tap_if_index)
+tap_inject_insert_tap (u32 sw_if_index, u32 tap_fd, u32 tap_if_index, u32 clib_file_index)
 {
   tap_inject_main_t * im = tap_inject_get_main ();
 
@@ -41,6 +41,10 @@ tap_inject_insert_tap (u32 sw_if_index, u32 tap_fd, u32 tap_if_index)
 
   vec_validate_init_empty (im->tap_fd_to_sw_if_index, tap_fd, ~0);
 
+  vec_validate_init_empty (im->sw_if_index_to_clib_file_index, sw_if_index, ~0);
+
+  im->sw_if_index_to_clib_file_index[sw_if_index] = clib_file_index;
+  
   im->sw_if_index_to_tap_fd[sw_if_index] = tap_fd;
   im->sw_if_index_to_tap_if_index[sw_if_index] = tap_if_index;
 
@@ -56,12 +60,23 @@ tap_inject_delete_tap (u32 sw_if_index)
   u32 tap_fd = im->sw_if_index_to_tap_fd[sw_if_index];
   u32 tap_if_index = im->sw_if_index_to_tap_if_index[sw_if_index];
 
+  im->sw_if_index_to_clib_file_index[sw_if_index] = ~0;
   im->sw_if_index_to_tap_if_index[sw_if_index] = ~0;
   im->sw_if_index_to_tap_fd[sw_if_index] = ~0;
   im->tap_fd_to_sw_if_index[tap_fd] = ~0;
 
   hash_unset (im->tap_if_index_to_sw_if_index, tap_if_index);
 }
+
+u32
+tap_inject_lookup_clib_file_index (u32 sw_if_index)
+{
+  tap_inject_main_t * im = tap_inject_get_main ();
+
+  vec_validate_init_empty (im->sw_if_index_to_clib_file_index, sw_if_index, ~0);
+  return im->sw_if_index_to_clib_file_index[sw_if_index];
+}
+
 
 u32
 tap_inject_lookup_tap_fd (u32 sw_if_index)
